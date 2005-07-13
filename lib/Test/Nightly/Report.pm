@@ -24,48 +24,48 @@ my @methods = qw(
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
-  Test::Nightly::Report - Generates a test report.
+Test::Nightly::Report - Generates a test report.
 
 =head1 DESCRIPTION
 
-  Generates a report based on the tests that have been run, that can then be emailed to you, or output to a file.
+Generates a report based on the tests that have been run, that can then be emailed to you, or output to a file.
 
 =head1 SYNOPSIS
 
   use Test::Nightly::Report;
-
+  
   my $nightly = Test::Nightly::Report->new({
     email_report => {
-      to => 'kirstinbettiol@gmail.com',
+  	to => 'kirstinbettiol@gmail.com',
     }
   });
 
-  $report->run();
+$report->run();
 
-  The following methods are available:
+The following methods are available:
 
 =cut
 
 =head2 new()
 
   my $report = Test::Nightly::Report->new({
-    email_report    => \%email_config,                # Emails the report. See L<Test::Nightly::Email> for config.
+    email_report    => \%email_config,                # Emails the report. See Test::Nightly::Email for config.
     report_template => '/dir/somewhere/template.txt', # Defaults to internal template.
     report_output   => '/dir/somewhere/output.txt',   # File to output the report to.
     test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
   });
 
-  Produces a report on the tests that have been run.  
+Produces a report on the tests that have been run.  
 
-  Depending on what you pass in, defines what report is generated. 
-  If you would like the report emailed to you, pass in C<email_report>. 
-  If you would like the report to be logged somewhere, then pass in C<report_template>.
+Depending on what you pass in, defines what report is generated. 
+If you would like the report emailed to you, pass in C<email_report>. 
+If you would like the report to be logged somewhere, then pass in C<report_template>.
 
-  Default template can be seen in L<Test::Nightly::Report::Template>
+Default template can be seen in L<Test::Nightly::Report::Template>
 
 =cut
 
@@ -89,7 +89,7 @@ sub new {
     ... takes the same arguments as new ...
   });
 
-  Generates the report.
+Generates the report.
 
 =cut
 
@@ -210,23 +210,23 @@ sub DESTROY {
 
 =item email_report
 
-  If set will email the report. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
+If set will email the report. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
 
 =item report_template
 
-  Pass this in if you wish to have your own customised report template. Otherwise, uses the default template is in Test::Nightly::Report::Template
+Pass this in if you wish to have your own customised report template. Otherwise, uses the default template is in Test::Nightly::Report::Template
 
 =item report_output
 
-  Set this to a filepath/filename and the report will be outputted here.
+Set this to a filepath/filename and the report will be outputted here.
 
 =item test
 
-  Output of the test.
+Output of the test.
 
 =item test_report
 
-  This is where you specify what you wish to report on after the outcome of the test. Specifying 'passed' will only report on tests that passed, specifying 'failed' will only report on tests that failed and specifying 'all' will report on both.
+This is where you specify what you wish to report on after the outcome of the test. Specifying 'passed' will only report on tests that passed, specifying 'failed' will only report on tests that failed and specifying 'all' will report on both.
 
 =head1 AUTHOR
 
@@ -239,12 +239,12 @@ This library is free software, you can use it under the same terms as perl itsel
 
 =head1 SEE ALSO
 
-L<Test::Nightly>
-L<Test::Nightly::Test>
-L<Test::Nightly::Report>
-L<Test::Nightly::Email>
-L<Test::Nightly::Report::Template>
-L<perl>
+L<Test::Nightly>,
+L<Test::Nightly::Test>,
+L<Test::Nightly::Report>, 
+L<Test::Nightly::Email>, 
+L<Test::Nightly::Report::Template>, 
+L<perl>.
 
 =cut
 

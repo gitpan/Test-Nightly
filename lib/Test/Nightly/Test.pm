@@ -21,15 +21,15 @@ my @methods = qw(
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
-  Test::Nightly::Test - Make and runs your tests.
+Test::Nightly::Test - Make and runs your tests.
 
 =head1 DESCRIPTION
 
-  Designed to run our tests, and then store the results back into the object.
+Designed to run our tests, and then store the results back into the object.
 
 =head1 SYNOPSIS
 
@@ -39,7 +39,7 @@ our $VERSION = '0.01';
 
   $test->run();
 
-  The following methods are available:
+The following methods are available:
 
 =cut
 
@@ -51,13 +51,13 @@ our $VERSION = '0.01';
     test_file_format      => ['.t', '.pl'],    # Optional, defaults to ['.t'].
   });
 
-  Create a new Test::Nightly::Test object.
+Create a new Test::Nightly::Test object.
 
-  C<modules> is an array of the has refs that include the path to the module and the makefile name. It isn't required that you supply this because the directories are found from the Test::Nightly object. You may want to specify these if you are calling this separately.
+C<modules> is an array of the has refs that include the path to the module and the makefile name. It isn't required that you supply this because the directories are found from the Test::Nightly object. You may want to specify these if you are calling this separately.
 
-  C<test_directory_format> in an array ref of what the test directories can be. By default it searches for the tests in ['t/'].
+C<test_directory_format> in an array ref of what the test directories can be. By default it searches for the tests in ['t/'].
 
-  C<test_file_format> is an array ref of the file types that your tests are. Defaults to ['.t'].
+C<test_file_format> is an array ref of the file types that your tests are. Defaults to ['.t'].
 
 =cut
 
@@ -92,7 +92,7 @@ sub new {
     # ... can take the same arguments as new() ... 
   });
 
-  Loops through the supplied modules, makes those modules and runs their tests.
+Loops through the supplied modules, makes those modules and runs their tests.
 
 =cut
 
@@ -269,31 +269,31 @@ sub DESTROY {
 
 =item modules
 
-  List of modules. Usually is generated when you call L<Test::Nightly> new method, however it is possible to pass it in directly here. 
-  Structure is like so:
+List of modules. Usually is generated when you call L<Test::Nightly> new method, however it is possible to pass it in directly here. 
+Structure is like so:
 
-  @modules = (
-    {
-      'directory' => '/dir/to/module01/'
-      'makefile   => 'Makefile.PL'  
-    },
-    {
-      'directory' => '/dir/to/module02/'
-      'makefile   => 'Makefile.PL'  
-    },
-  );
+@modules = (
+  {
+    'directory' => '/dir/to/module01/'
+    'makefile   => 'Makefile.PL'  
+  },
+  {
+    'directory' => '/dir/to/module02/'
+    'makefile   => 'Makefile.PL'  
+  },
+);
 
 =item test_directory_format
   
-  An array ref of what format the test directories can be. By default it searches for the tests in 't/'.
+An array ref of what format the test directories can be. By default it searches for the tests in 't/'.
 
 =item test_file_format 
 
-  An array ref of the test file formats you have. e.g. @file_formats = ('.pl', '.t'); Defaults to ['.t'].
+An array ref of the test file formats you have. e.g. @file_formats = ('.pl', '.t'); Defaults to ['.t'].
 
 =item tests
 
-  Where the output is stored after running the tests.
+Where the output is stored after running the tests.
 
 =head1 TODO
 
@@ -310,13 +310,13 @@ This library is free software, you can use it under the same terms as perl itsel
 
 =head1 SEE ALSO
 
-L<Test::Nightly>
-L<Test::Nightly::Test>
-L<Test::Nightly::Report>
-L<Test::Nightly::Email>
-L<Test::Nightly::Version>
-L<Test::Nightly::Coverage>
-L<perl>
+L<Test::Nightly>,
+L<Test::Nightly::Test>,
+L<Test::Nightly::Report>,
+L<Test::Nightly::Email>,
+L<Test::Nightly::Version>,
+L<Test::Nightly::Coverage>,
+L<perl>.
 
 =cut
 

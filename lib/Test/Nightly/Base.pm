@@ -20,19 +20,15 @@ my @methods = qw(
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
-  Test::Nightly::Base - Internal base methods
+Test::Nightly::Base - Internal base methods
 
 =head1 DESCRIPTION
 
-  Provides internal base methods for the Test::Nightly::* modules
-
-=head1 AUTHOR
-
-  Kirstin Bettiol <kirstinbettiol@gmail.com>
+Provides internal base methods for the Test::Nightly::* modules
 
 =cut
 
@@ -147,10 +143,10 @@ This library is free software, you can use it under the same terms as perl itsel
 
 =head1 SEE ALSO
 
-L<Test::Nightly>
-L<Test::Nightly::Test>
-L<Test::Nightly::Report>
-L<Test::Nightly::Email>
+L<Test::Nightly>, 
+L<Test::Nightly::Test>, 
+L<Test::Nightly::Report>, 
+L<Test::Nightly::Email>, 
 L<perl>.
 
 =cut

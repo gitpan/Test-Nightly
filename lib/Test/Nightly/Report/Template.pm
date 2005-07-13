@@ -2,13 +2,15 @@ package Test::Nightly::Report::Template;
 
 use strict;
 
+our $VERSION = '0.01';
+
 =head1 NAME
 
-  Test::Nightly::Report::Template
+Test::Nightly::Report::Template
 
 =head1 DESCRIPTION
 
-  Default template for test reporting
+Default template for test reporting
 
 =cut
 

@@ -29,11 +29,11 @@ our $VERSION = '0.01';
 
 =head1 NAME
 
-  Test::Nightly::Email - Emails reports, errors etc.
+Test::Nightly::Email - Emails reports, errors etc.
 
 =head1 DESCRIPTION
 
-  Package that uses the Email::* modules to mail reports and error notifications. Use this module to set up your email configuration. 
+Package that uses the Email::* modules to mail reports and error notifications. Use this module to set up your email configuration. 
 
 =head1 SYNOPSIS
 
@@ -62,7 +62,7 @@ our $VERSION = '0.01';
     smtp_server  => 'smtp.yourserver.com',       # Required if you specify SMTP as your mailer.
   });
 
-  The constructor to create the new email object. 
+The constructor to create the new email object. 
 
 =cut
 
@@ -86,7 +86,7 @@ sub new {
     ... takes the same arguments as new ...
   });
 
-  Sends the email.
+Sends the email.
 
 =cut
 
@@ -143,39 +143,39 @@ sub email {
 
 =item to
 
-  The email "To" field. Takes a comma separated list of emails. Required.
+The email "To" field. Takes a comma separated list of emails. Required.
 
 =item cc
 
-  The email "Cc" field. Takes a comma separated list of emails.
+The email "Cc" field. Takes a comma separated list of emails.
 
 =item bcc
 
-  The email "Bcc" field. Takes a comma separated list of emails.
+The email "Bcc" field. Takes a comma separated list of emails.
 
 =item from
 
-  The email "from" field.
+The email "from" field.
 
 =item subject
 
-  The subject line of the email
+The subject line of the email
 
 =item content_type
   
-  The Content-type you wish the email to be. Defaults to 'text/html'.
+The Content-type you wish the email to be. Defaults to 'text/html'.
 
 =item mailer
 
-  The mailer you wish to use. Currently supports 'Sendmail' || 'SMTP' || 'Qmail'. Defaults to 'Sendmail'
+The mailer you wish to use. Currently supports 'Sendmail' || 'SMTP' || 'Qmail'. Defaults to 'Sendmail'
 
 =item message
 
-  The body of the email.
+The body of the email.
 
 =item smtp_server
 
-  If you specify SMTP as your mailer then you are required to specify this.
+If you specify SMTP as your mailer then you are required to specify this.
 
 =back
 
@@ -190,17 +190,17 @@ This library is free software, you can use it under the same terms as perl itsel
 
 =head1 SEE ALSO
 
-L<Email::Send>
-L<Email::Simple>
-L<Email::Simple::Creator>
-L<Email::Send::Qmail>
-L<Email::Send::SMTP>
-L<Email::Send::Sendmail>
-L<Test::Nightly>
-L<Test::Nightly::Test>
-L<Test::Nightly::Report>
-L<Test::Nightly::Email>
-L<perl>
+L<Email::Send>, 
+L<Email::Simple>, 
+L<Email::Simple::Creator>, 
+L<Email::Send::Qmail>, 
+L<Email::Send::SMTP>, 
+L<Email::Send::Sendmail>, 
+L<Test::Nightly>, 
+L<Test::Nightly::Test>, 
+L<Test::Nightly::Report>, 
+L<Test::Nightly::Email>, 
+L<perl>.
 
 =cut
 

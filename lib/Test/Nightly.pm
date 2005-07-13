@@ -3,7 +3,7 @@ package Test::Nightly;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use File::Spec;
 use File::Find::Rule;
@@ -33,17 +33,13 @@ my @run_these = qw(version_control run_tests coverage_report generate_report);
 
 =head1 NAME
 
-  Test::Nightly - Run your tests, produce a report on the results.
-
-=head1 DESCRIPTION
-
-  A customisable interface which will run your tests, and produce a report with the status of the modules in your system.
+Test::Nightly - Run your tests, produce a report on the results.
 
 =head1 SYNOPSIS
 
-  ::: SCENARIO ONE :::
+::: SCENARIO ONE :::
 
-  Pass in all the options direct into the constructor.
+Pass in all the options direct into the constructor.
 
   use Test::Nightly;
 
@@ -63,9 +59,9 @@ my @run_these = qw(version_control run_tests coverage_report generate_report);
     debug           => 1,
   });
 
-  ::: SCENARIO TWO :::
+::: SCENARIO TWO :::
 
-  Call each method individually.
+Call each method individually.
 
   use Test::Nightly;
 
@@ -74,13 +70,17 @@ my @run_these = qw(version_control run_tests coverage_report generate_report);
   $nightly->run_tests();
 
   $nightly->generate_report({
-        email_report => {
-            to      => 'kirstinbettiol@gmail.com',
-        },
-        report_output => '/report/output/dir/test_report.html',
-  })
+    email_report => {
+  	  to      => 'kirstinbettiol@gmail.com',
+    },
+    report_output => '/report/output/dir/test_report.html',
+  });
 
-  The following methods are available:
+=cut
+
+=head1 INTRODUCTION
+
+The idea behind this module is to have one script, most probably a cron job, to run all your tests once a night (or once a week). This module will then produce a report on the whether those tests passed or failed. From this report you can see at a glance what tests are failing.
 
 =cut
 
@@ -93,20 +93,22 @@ my @run_these = qw(version_control run_tests coverage_report generate_report);
     log_errors       => '/path/to/log.txt'       # If set, errors will be outputted to the supplied file. 
     print_errors     => 1                        # If set, errors will be printed to stdout. 
     run_tests        => {
-      test_directory_format => ['t/', 'tests/'], # Optional, defaults to 't/'.
-      test_file_format      => ['.t', '.pl'],    # Optional, defaults to '.t'.
+  	test_directory_format => ['t/', 'tests/'], # Optional, defaults to 't/'.
+  	test_file_format      => ['.t', '.pl'],    # Optional, defaults to '.t'.
     },
     generate_report => {
-      email_report    => \%email_config,                # Emails the report. See L<Test::Nightly::Email> for config.
-      report_template => '/dir/somewhere/template.txt', # Defaults to internal template.
-      report_output   => '/dir/somewhere/output.txt',   # File to output the report to.
-      test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
+  	email_report    => \%email_config,                # Emails the report. See L<Test::Nightly::Email> for config.
+  	report_template => '/dir/somewhere/template.txt', # Defaults to internal template.
+  	report_output   => '/dir/somewhere/output.txt',   # File to output the report to.
+  	test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
     },
   });
 
-  This is the constructor used to create the main object.
+This is the constructor used to create the main object.
 
-  Does a search for all modules on your system, matching the makefile description (L<makefile_names>). You can choose to run all your tests and generate your report directly from this module. Or you can simply supply L<base_directories> and it call the other methods separately. If there are errors with the running of this module then you are able to redirect those errors to your email, a log or to stdout.
+Does a search for all modules on your system, matching the makefile description (C<makefile_names>). You can choose to run all your tests and generate your report directly from this module, by supplying C<run_tests> and C<generate_report>. Or you can simply supply C<base_directories> and it call the other methods separately. 
+
+C<email_errors>, C<log_errors> and C<print_errors> relate to how the errors produced from this module (if there are any) are handled. 
 
 =cut
 
@@ -147,9 +149,9 @@ sub new {
     test_file_format      => ['.t', '.pl'],     # Optional, defaults to ['.t'].
   });
 
-  Runs all the tests on the directories that are stored in the object.
+Runs all the tests on the directories that are stored in the object.
 
-  Results are stored back in the object so they can be reported on.
+Results are stored back in the object so they can be reported on.
 
 =cut
 
@@ -176,13 +178,14 @@ sub run_tests {
     test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
   });
 
-  Based on the methods that have been run, produces a report on these. 
+Based on the methods that have been run, produces a report on these. 
 
-  Depending on what you pass in, defines what report is generated. If you pass in an email address to L<email_report> then the report will be
-  emailed to those people. If you specify an output file to L<report_output> then the report will be outputted to that file. 
-  If you specify both, then both will be done. 
+Depending on what you pass in, defines what report is generated. If you pass in an email address to L<email_report> then the report will be
+emailed. If you specify an output file to C<report_output> then the report will be outputted to that file. 
+If you specify both, then both will be done. 
 
-  Default behavior is to use the internal template that is in L<Test::Nightly::Report::Template>, however you can overwrite this with your own template (L<report_template>). Uses Template Toolkit.
+Default behavior is to use the internal template that is in L<Test::Nightly::Report::Template>, however you can overwrite this with your own template (C<report_template>). Uses Template Toolkit logic.
+
 =cut
 
 sub generate_report {
@@ -249,63 +252,63 @@ sub DESTROY {
 
 =item base_directories
 
-  Required. Array of base directories to search in.
+Required. Array ref of base directories to search in.
 
 =item debug
 
-  Turns debugging messages on or off.
+Turns debugging messages on or off.
 
 =item email_errors
 
-  If on emails any errors generated. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
+If on emails any errors generated. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
 
 =item email_report
 
-  If set will email the report. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
+If set will email the report. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
 
 =item errors
 
-  List of errors that have been generated.
+List of errors that have been generated.
 
 =item log_errors
 
-  If set, will log any errors generated to the file specified.
+If set, will log any errors generated to the file specified.
 
 =item makefile_names
 
-  Searches for the specified makefile names. Defaults to Makefile.PL
+Searches for the specified makefile names. Defaults to Makefile.PL
 
 =item modules
 
-  List of modules that have been found, returns an array ref of undef.
+List of modules that have been found, returns an array ref of undef.
 
 =item print_errors
 
-  If set, will print the error to stdout.
+If set, will print the error to stdout.
 
 =item report_output
 
-  Set this to a file somewhere and the report will be outputted here.
+Set this to a file somewhere and the report will be outputted here.
 
 =item report_template
 
-  Pass this in if you wish to use your own customised report template. Otherwise uses the default template is in Test::Nightly::Report::Template
+Pass this in if you wish to use your own customised report template. Otherwise uses the default template is in Test::Nightly::Report::Template
 
 =item test
 
-  Holds the Test::Nightly::Test object.
+Holds the Test::Nightly::Test object.
 
 =item test_directory_format
 
-  An array of what format the test directories can be. By default it searches for the tests in 't/'
+An array of what format the test directories can be. By default it searches for the tests in 't/'
 
 =item test_file_format
 
-  An array of the test file formats you have.
+An array of the test file formats you have.
 
 =item test_report
 
-  This is where you specify what you wish to report on after the outcome of the test. Specifying 'passed' will only report on tests that passed, specifying 'failed' will only report on tests that failed and specifying 'all' will report on both.
+This is where you specify what you wish to report on after the outcome of the test. Specifying 'passed' will only report on tests that passed, specifying 'failed' will only report on tests that failed and specifying 'all' will report on both.
 
 =back
 
@@ -314,7 +317,7 @@ sub DESTROY {
 Soon I would like to implement a module that will handle version control, so you are able to checkout and update your modules for testing. As well as this it would be nice to incorporate in a wrapper for L<Devel::Cover>.
 
 L<Test::Nightly::Version>,
-L<Test::Nightly::Coverage>,
+L<Test::Nightly::Coverage>.
 
 =head1 AUTHOR
 
@@ -322,11 +325,11 @@ Kirstin Bettiol <kirstinbettiol@gmail.com>
 
 =head1 SEE ALSO
 
-L<Test::Nightly>
-L<Test::Nightly::Test>
-L<Test::Nightly::Report>
-L<Test::Nightly::Email>
-L<perl>
+L<Test::Nightly>, 
+L<Test::Nightly::Test>, 
+L<Test::Nightly::Report>, 
+L<Test::Nightly::Email>, 
+L<perl>.
 
 =head1 COPYRIGHT
 
@@ -335,7 +338,7 @@ This library is free software, you can use it under the same terms as perl itsel
 
 =head1 THANKS
 
-Thanks to Leo Lapworth and Foxtons for letting me develop this on their time.
+Thanks to Leo Lapworth <LLAP@cuckoo.org> for helping me with this and Foxtons for letting me develop this on their time.
 
 =cut
 
