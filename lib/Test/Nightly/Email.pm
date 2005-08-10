@@ -8,7 +8,7 @@ use Email::Send;
 use Email::Simple;
 use Email::Simple::Creator;
 
-use base qw(Test::Nightly::Base Class::Accessor::Chained::Fast);
+use base qw(Test::Nightly::Base Class::Accessor::Fast);
 
 my @methods = qw(
 	smtp_server
@@ -25,7 +25,7 @@ my @methods = qw(
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -33,7 +33,7 @@ Test::Nightly::Email - Emails reports, errors etc.
 
 =head1 DESCRIPTION
 
-Package that uses the Email::* modules to mail reports and error notifications. Use this module to set up your email configuration. 
+Package that uses the Email::* modules to mail reports and error notifications. Use this module to set up your email configuration. You probably should not be dealing with this directly.
 
 =head1 SYNOPSIS
 
@@ -70,9 +70,7 @@ sub new {
 
     my ($class, $conf) = @_;
 
-	my $self = {};
-
-    bless($self, $class);
+	my $self = bless {}, $class;
 
 	$self->_init($conf, \@methods);
 

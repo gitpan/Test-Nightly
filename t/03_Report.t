@@ -4,9 +4,6 @@ use lib qw( ./blib/lib ../blib/lib );
 
 use strict;
 use Test::More tests => 2;
-use Carp;
-use Data::Dumper;
-use blib;
 
 #==================================================
 # Check that module loads

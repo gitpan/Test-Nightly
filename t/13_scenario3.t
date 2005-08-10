@@ -4,9 +4,6 @@ use lib qw( ./blib/lib ../blib/lib );
 
 use strict;
 use Test::More tests => 3;
-use Carp;
-use Data::Dumper;
-use blib;
 
 my $report = '/tmp/test_nightly_report.txt';
 

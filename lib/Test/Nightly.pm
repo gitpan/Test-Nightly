@@ -3,8 +3,9 @@ package Test::Nightly;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
+use Carp;
 use File::Spec;
 use File::Find::Rule;
 
@@ -12,12 +13,13 @@ use Test::Nightly::Test;
 use Test::Nightly::Email;
 use Test::Nightly::Report;
 
-use base qw(Test::Nightly::Base Class::Accessor::Chained::Fast);
+use base qw(Test::Nightly::Base Class::Accessor::Fast);
 
 my @methods = qw(
 	base_directories
 	email_report
-	makefile_names
+	build_script
+	build_type
     modules
 	report_output
 	report_template
@@ -26,6 +28,8 @@ my @methods = qw(
 	test_file_format
 	test_report
     version_result
+	install_module
+	skip_tests
 );
 
 __PACKAGE__->mk_accessors(@methods);
@@ -33,13 +37,17 @@ my @run_these = qw(version_control run_tests coverage_report generate_report);
 
 =head1 NAME
 
-Test::Nightly - Run your tests, produce a report on the results.
+Test::Nightly - Run all your tests and produce a report on the results.
+
+=head1 DESCRIPTION
+
+The idea behind this module is to have one script, most probably a cron job, to run all your tests once a night (or once a week). This module will then produce a report on the whether those tests passed or failed. From this report you can see at a glance what tests are failing. This is alpha software! Please try it out, email me bugs suggestions etc.
 
 =head1 SYNOPSIS
 
-::: SCENARIO ONE :::
+ # SCENARIO ONE #
 
-Pass in all the options direct into the constructor.
+  Pass in all the options direct into the constructor.
 
   use Test::Nightly;
 
@@ -52,20 +60,18 @@ Pass in all the options direct into the constructor.
         },
         report_output => '/report/output/dir/test_report.html',
     },
-    email_errors => {
-        to      => 'kirstinbettiol@gmail.com',
-    },
-    print_errors    => 1,
     debug           => 1,
   });
 
-::: SCENARIO TWO :::
+ # SCENARIO TWO #
 
-Call each method individually.
+  Call each method individually.
 
   use Test::Nightly;
 
-  my $nightly = Test::Nightly->new();
+  my $nightly = Test::Nightly->new({
+    base_directories => ['/base/dir/from/which/to/search/for/modules/'],
+  });
 
   $nightly->run_tests();
 
@@ -76,11 +82,19 @@ Call each method individually.
     report_output => '/report/output/dir/test_report.html',
   });
 
-=cut
+  # SCENARIO THREE
 
-=head1 INTRODUCTION
+  Use build instead of make.
 
-The idea behind this module is to have one script, most probably a cron job, to run all your tests once a night (or once a week). This module will then produce a report on the whether those tests passed or failed. From this report you can see at a glance what tests are failing.
+  use Test::Nightly;
+
+  my $nightly = Test::Nightly->new({
+    base_directories   => ['/base/dir/from/which/to/search/for/modules/'],
+    build_script       => 'Build.PL',
+    run_tests          => {
+      build_type  => 'build',
+    },
+  });
 
 =cut
 
@@ -88,45 +102,43 @@ The idea behind this module is to have one script, most probably a cron job, to 
 
   my $nightly = Test::Nightly->new({
     base_directories => \@directories,           # Required. Array of base directories to search in.
-    makefile_names   => [Build.PL, Makefile.PL], # Defaults to Makefile.PL.
-    email_errors     => \%email_config,          # If set, errors will be emailed.
-    log_errors       => '/path/to/log.txt'       # If set, errors will be outputted to the supplied file. 
-    print_errors     => 1                        # If set, errors will be printed to stdout. 
+    build_script     => 'Build.PL',              # Defaults to 'Makefile.PL'.
     run_tests        => {
-  	test_directory_format => ['t/', 'tests/'], # Optional, defaults to 't/'.
-  	test_file_format      => ['.t', '.pl'],    # Optional, defaults to '.t'.
+  	  test_directory_format => ['t/', 'tests/'], # Optional, defaults to 't/'.
+  	  test_file_format      => ['.t', '.pl'],    # Optional, defaults to '.t'.
+      build_type            => 'make',           # || 'build'. Defaults to 'make'.
+      install_module        => 'all',            # || 'passed'. 'all' is default.
+      skip_tests            => 1,                # skips the tests.
+      test_order            => 'ordered',        # || 'random'. 'ordered' is default.
     },
     generate_report => {
-  	email_report    => \%email_config,                # Emails the report. See L<Test::Nightly::Email> for config.
-  	report_template => '/dir/somewhere/template.txt', # Defaults to internal template.
-  	report_output   => '/dir/somewhere/output.txt',   # File to output the report to.
-  	test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
+  	  email_report    => \%email_config,                # Emails the report. See L<Test::Nightly::Email> for config.
+  	  report_template => '/dir/somewhere/template.txt', # Defaults to internal template.
+  	  report_output   => '/dir/somewhere/output.txt',   # File to output the report to.
+  	  test_report     => 'all',                         # 'failed' || 'passed'. Defaults to all.
     },
   });
 
 This is the constructor used to create the main object.
 
-Does a search for all modules on your system, matching the makefile description (C<makefile_names>). You can choose to run all your tests and generate your report directly from this module, by supplying C<run_tests> and C<generate_report>. Or you can simply supply C<base_directories> and it call the other methods separately. 
-
-C<email_errors>, C<log_errors> and C<print_errors> relate to how the errors produced from this module (if there are any) are handled. 
+Does a search for all modules on your system, matching the build script description (C<build_script>). You can choose to run all your tests and generate your report directly from this module, by supplying C<run_tests> and C<generate_report>. Or you can simply supply C<base_directories> and it call the other methods separately. 
 
 =cut
 
 sub new {
 
     my ($class, $conf) = @_;
-
-	my $self = {};
-
-    bless($self, $class);
+		
+	my $self = bless {}, $class;
 
 	$self->_init($conf, \@methods);
 
 	if (!defined $self->base_directories()) {
-		$self->_add_error('Test::Nightly::new() - "base_directories" must be supplied');
+		croak 'Test::Nightly::new() - "base_directories" must be supplied';
 	} else {
 
-		$self->makefile_names(['Makefile.PL']) unless defined $self->makefile_names() and ref($self->makefile_names()) eq 'ARRAY';
+		$self->build_script('Makefile.PL') unless defined $self->build_script();
+
 		$self->_find_modules();
 
 		# See if any methods should be called from new
@@ -137,16 +149,22 @@ sub new {
 				$self->$run($conf->{$run});
 			}
 		}
+
 		return $self;
+
 	}
+
 }
 
 =head2 run_tests()
 
   $nightly->run_tests({
-    modules               => \@modules,         # Optional, default is to use the directories stored in the object.
-    test_directory_format => ['t/', 'tests/'],  # Optional, defaults to ['t/'].
-    test_file_format      => ['.t', '.pl'],     # Optional, defaults to ['.t'].
+    build_type            => 'make'            # || 'build'. 'make' is default.
+    install_module        => 'all',            # || 'passed'. 'all' is default.
+    skip_tests            => 1,                # skips the tests.
+    test_directory_format => ['t/', 'tests/'], # Optional, defaults to ['t/'].
+    test_file_format      => ['.t', '.pl'],    # Optional, defaults to ['.t'].
+    test_order            => 'ordered',        # || 'random'. 'ordered' is default.
   });
 
 Runs all the tests on the directories that are stored in the object.
@@ -204,45 +222,42 @@ sub _find_modules {
 
     my ($self, $conf) = @_;
 
+    if ($self->build_script() =~ /\s/) {
+        croak 'Test::Nightly::_find_modules(): Supplied "build_script" can not contain a space';
+    }
+
 	my @modules;
 
+	# Search through all the base directories supplied.
 	foreach my $dir (@{$self->base_directories()}) {
 
+		# Continue if that directory exists
 		if (-d $dir) {
+			
+			# Search for files matching the build script description.
+			my @found_build_scripts = File::Find::Rule->file()->name( $self->build_script() )->in($dir);
 
-			foreach my $file (@{$self->makefile_names()}) {
+			# do i need to do this?
+			foreach my $found_build_script (@found_build_scripts) {
 
-				my @found_makefiles = File::Find::Rule->file()->name($file)->in($dir);
-
-				foreach my $found_makefile (@found_makefiles) {
-
-					my ($volume,$directory,$makefile) = File::Spec->splitpath( $found_makefile );
-
-					my %module;
-					$module{'directory'} = $directory;
-					$module{'makefile'} = $makefile;
-					
-					push(@modules, \%module);
-
-				}
+				my ($volume, $directory, $build_script) = File::Spec->splitpath( $found_build_script );
+				
+				my %module;
+				$module{'directory'} = $directory;
+				$module{'build_script'} = $build_script;
+				
+				push(@modules, \%module);
 
 			}
 
 		} else {
-			$self->_add_error('Test::Nightly::_find_modules() - directory: "'.$dir.'" is not a valid directory');
+			carp 'Test::Nightly::_find_modules() - directory: "'.$dir.'" is not a valid directory';
+			next;
 		}
 
 	}
 
     $self->modules(\@modules);
-
-}
-
-sub DESTROY {
-	
-	my ($self) = @_;
-
-	$self->_destroy();
 
 }
 
@@ -254,37 +269,33 @@ sub DESTROY {
 
 Required. Array ref of base directories to search in.
 
+=item build_script
+
+Searches for the specified build_script names. Defaults to Makefile.PL
+
+=item build_type
+
+Pass this in so we know how you build your modules. There are two options: 'build' and 'make'. Defaults to 'make'.
+
 =item debug
 
 Turns debugging messages on or off.
-
-=item email_errors
-
-If on emails any errors generated. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
 
 =item email_report
 
 If set will email the report. Takes a hash ref of \%email_config, refer to Test::Nightly::Email for the options.
 
-=item errors
+=item install_module
 
-List of errors that have been generated.
-
-=item log_errors
-
-If set, will log any errors generated to the file specified.
-
-=item makefile_names
-
-Searches for the specified makefile names. Defaults to Makefile.PL
+Pass this in if you wish to have the module installed.
 
 =item modules
 
 List of modules that have been found, returns an array ref of undef.
 
-=item print_errors
+=item skip_tests
 
-If set, will print the error to stdout.
+Pass this in if you wish to skip running the tests.
 
 =item report_output
 
@@ -310,7 +321,17 @@ An array of the test file formats you have.
 
 This is where you specify what you wish to report on after the outcome of the test. Specifying 'passed' will only report on tests that passed, specifying 'failed' will only report on tests that failed and specifying 'all' will report on both.
 
+=item test_order
+
+Pass this in if you wish to influence the way the tests are run. Either 'ordered' or 'random'. Detauls to 'ordered'.
+
 =back
+
+=head1 DISCLAIMERS
+
+This module assumes that you only need installed modules to test your module. So if the module you're testing requires the changes you've made to another module in the tree that you haven't installed, testing will fail.
+
+If your module asks interactive questions in the build script or test scripts then this won't work.
 
 =head1 TODO
 

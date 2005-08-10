@@ -4,9 +4,6 @@ use lib qw( ./blib/lib ../blib/lib );
 
 use strict;
 use Test::More tests => 5;
-use Carp;
-use Data::Dumper;
-use blib;
 
 #==================================================
 # Check that module loads
@@ -21,11 +18,11 @@ my @test_methods = qw(new email);
 #==================================================
 can_ok('Test::Nightly::Email', @test_methods);
 
-my $email = Test::Nightly::Email->new();
+my $test_obj1 = Test::Nightly::Email->new();
 
 my $subject = 'This is a test subject';
 
-$email->email({
+$test_obj1->email({
 	subject	=> $subject
 });
 
@@ -33,17 +30,17 @@ $email->email({
 # Check default mailer is Sendmail
 #==================================================
 
-ok($email->mailer() eq 'Sendmail', 'email() - When nothing is supplied for mailer, the default mailer is set to Sendmail');
+ok($test_obj1->mailer() eq 'Sendmail', 'email() - When nothing is supplied for mailer, the default mailer is set to Sendmail');
 
 #==================================================
 # Check default content_type is 'text/html'
 #==================================================
 
-ok($email->content_type() eq 'text/html', 'email() - When nothing is supplied for content_type, the default is set to text/html');
+ok($test_obj1->content_type() eq 'text/html', 'email() - When nothing is supplied for content_type, the default is set to text/html');
 
 #==================================================
 # Check the subject is set
 #==================================================
 
-ok($email->subject() eq $subject, 'email() - As expected, subject is "'.$subject.'"');
+ok($test_obj1->subject() eq $subject, 'email() - As expected, subject is "'.$subject.'"');
 

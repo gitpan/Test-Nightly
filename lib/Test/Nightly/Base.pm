@@ -7,20 +7,16 @@ use Carp;
 
 use Test::Nightly::Email;
 
-use base 'Class::Accessor::Chained::Fast';
+use base 'Class::Accessor::Fast';
 
 my @methods = qw(
 	debug
-	email_errors
-	errors
-	log_errors
-	print_errors
 	report_template
 );
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -28,7 +24,7 @@ Test::Nightly::Base - Internal base methods
 
 =head1 DESCRIPTION
 
-Provides internal base methods for the Test::Nightly::* modules
+Provides internal base methods for the Test::Nightly::* modules. You don't have to worry about what is here.
 
 =cut
 
@@ -41,6 +37,9 @@ Provides internal base methods for the Test::Nightly::* modules
 sub _init {
 
     my ($self, $conf, $methods) = @_;
+
+    $self->{_is_win32} = ( $^O =~ /^(MS)?Win32$/ );
+    $self->{_is_macos} = ( $^O eq 'MacOS' );
 
 	my @all_methods = @{$methods};
 	push (@all_methods, @methods);
@@ -55,24 +54,6 @@ sub _init {
                 $self->$method($conf->{$method});
             }
         }
-    }
-
-}
-
-#
-# _add_error()
-#
-# Compiles a list of errors.
-#
-
-sub _add_error {
-
-    my ($self, $error) = @_;
-
-    if (defined $self->errors()) {
-        push (@{$self->errors()}, $error);
-    } else {
-        $self->errors([$error]);
     }
 
 }
@@ -94,41 +75,18 @@ sub _debug {
 }
 
 #
-# _destroy()
+# _perl_command()
 #
-# On DESTROY this method is called to handle the errors.
+# Returns the command to run perl.
 #
 
-sub _destroy {
+sub _perl_command {
 
-    my ($self) = @_;
+    my $self = shift;
 
-    if (defined $self->errors()) {
-
-        if (defined $self->log_errors()) {
-
-            open(FH,">".$self->log_errors()) || $self->_error('Test::Nightly::Base::destroy() - Error with "log_errors" ('.$self->log_errors()->{file}.') : '.$!);
-            print FH join("\n", @{$self->errors()});
-            close(FH);
-
-        }
-
-        if (defined $self->email_errors()) {
-
-            my $email = Test::Nightly::Email->new($self->email_errors());
-
-            $email->email({
-                subject => 'Errors created while running Test::Nightly',
-                message => join("\n", @{$self->errors()}),
-            });
-
-        }
-
-        if (defined $self->print_errors()) {
-            print join("\n", @{$self->errors()})."\n";
-        }
-
-    }
+    return $ENV{HARNESS_PERL}           if defined $ENV{HARNESS_PERL};
+    return Win32::GetShortPathName($^X) if $self->{_is_win32};
+    return $^X;
 
 }
 

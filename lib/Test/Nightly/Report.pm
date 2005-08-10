@@ -9,7 +9,7 @@ use DateTime;
 use Test::Nightly::Email;
 use Test::Nightly::Report::Template;
 
-use base qw(Test::Nightly::Base Class::Accessor::Chained::Fast);
+use base qw(Test::Nightly::Base Class::Accessor::Fast);
 
 my @methods = qw(
 	email_report
@@ -24,7 +24,7 @@ my @methods = qw(
 
 __PACKAGE__->mk_accessors(@methods);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -32,7 +32,7 @@ Test::Nightly::Report - Generates a test report.
 
 =head1 DESCRIPTION
 
-Generates a report based on the tests that have been run, that can then be emailed to you, or output to a file.
+Generates a report based on the tests that have been run, that can then be emailed to you, or output to a file. You probably should not be dealing with this directly.
 
 =head1 SYNOPSIS
 
@@ -73,9 +73,7 @@ sub new {
 
     my ($class, $conf) = @_;
 
-	my $self = {};
-
-    bless($self, $class);
+	my $self = bless {}, $class;
 
 	$self->_init($conf, \@methods);
 
@@ -98,6 +96,7 @@ sub run {
     my ($self, $conf) = @_;
 
 	$self->test_report('all') unless $self->test_report();
+	$self->_debug('Running Report');
 
 	# Return if there are no tests
 	return if ( !$self->tests() );
@@ -108,6 +107,7 @@ sub run {
 
 	# Work out what test data we want.
 	my %vals;
+
 	if ($self->test_report() eq 'failed') {
 		$vals{'tests'} = $self->_failed_tests();
 	} elsif ($self->test_report() eq 'passed') {
@@ -192,15 +192,6 @@ sub _failed_tests {
 	my $self = shift;
 
 	return $self->test()->failed_tests();
-
-}
-
-sub DESTROY {
-
-    my ($self) = @_;
-
-    # Can be found in Test::Nightly::Base
-    $self->_destroy();
 
 }
 

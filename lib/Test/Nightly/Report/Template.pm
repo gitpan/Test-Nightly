@@ -2,7 +2,7 @@ package Test::Nightly::Report::Template;
 
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 NAME
 

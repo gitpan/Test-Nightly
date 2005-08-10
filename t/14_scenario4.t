@@ -3,7 +3,7 @@
 use lib qw( ./blib/lib ../blib/lib );
 
 use strict;
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 my $report = '/tmp/passing_test_report.txt';
 
@@ -18,36 +18,38 @@ BEGIN { use_ok( 'Test::Nightly' ) };
 &cleanup;
 
 #==================================================
-# SCENARIO TWO
-#	- We are only reporting on passed tests
+# SCENARIO FOUR
+#	- We only have one test - test.pl
 #   - Everything is passed into new
-#	- Different type of test directory ('a')
+#	- Test directory is the base directory
 # 
 #==================================================
 
 my $test_obj1 = Test::Nightly->new({
 	base_directories 	=> ['t/data/module/'],
 	run_tests			=> {
-		test_directory_format	=> ['a'],
-		test_report				=> 'passed',
+		test_directory_format	=> ['.'],
+		test_file_format	=> ['.pl'],
 	},
 	generate_report	=> {
 		report_output => $report, 
 	},
 });
 
-#==================================================
-# Check that test_report has been set to passed
-#==================================================
+ok($test_obj1->test_file_format()->[0] eq '.pl', 'test_file_format set to .pl');
 
-ok($test_obj1->test_report() eq 'passed', 'test_report has been set to passed');
+ok($test_obj1->test_directory_format()->[0] eq '.', 'test_directory_format set to .');
 
-#==================================================
-# Check that test_directory_format has been set 
-# to "a" 
-#==================================================
+my %test_output_format = (
+	't/data/module' => [
+	{
+		'test' => 'test.pl',
+		'status' => 'failed'
+	}
+	]
+);
 
-ok($test_obj1->test_directory_format()->[0] eq 'a', 'test_directory_format has been set to "a"');
+is_deeply($test_obj1->test()->tests(), \%test_output_format, 'run() - tests() has the correct structure');
 
 my $file_exists = 0;
 if (-e $report) {
